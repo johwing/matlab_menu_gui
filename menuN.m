@@ -24,7 +24,7 @@ function choice = menuN(mtitle, options, Opt)
 %           |  O  option1    |
 %           |  x  option2    |
 %           |  O     ...     |
-%           |  [    OK    ]  |
+%           |  [OK][Cancel]  |
 %           |----------------|
 %     (p) [string && options(1:2) == 'p|' ]:
 %           Popupmenu for single selection, separate options with |:
@@ -32,7 +32,7 @@ function choice = menuN(mtitle, options, Opt)
 %     ex. options = 'p|option1|option2|...', results in:
 %           |--mtitle--------|
 %           |  | optionX |v| |
-%           |  [    OK     ] |
+%           |  [OK] [Cancel] |
 %           |----------------|
 %     (x) [string && options(1:2) == 'x|' ]:
 %           Checkboxes with mutliselection, separate options with |:
@@ -42,7 +42,7 @@ function choice = menuN(mtitle, options, Opt)
 %           | | | options    |
 %           | |x| options    |
 %           | | |    ...     |
-%           | [    OK     ]  |
+%           | [OK][Cancel]   |
 %           |----------------|
 %     (l) [string]: Listbox with mutliselection, separate options with |.
 %           Start an option string part with ¤ to set it default toggled on.
@@ -51,24 +51,24 @@ function choice = menuN(mtitle, options, Opt)
 %           |  |  option1  |   |
 %           |  |  option2  |   |
 %           |  |    ...    |   |
-%           |  [    OK     ]   |
+%           |  [OK] [Cancel]   |
 %           |------------------|
 %     (s) [double, length == 2]: Slider is created from initial to final value.
 %      or [double, length == 3]: Same slider but with third value as default
 %     ex. options = [0,7,3.5], results in:
 %           |--mtitle--------------|
 %           | |<|====[]====|>| 3.5 |
-%           | [        OK        ] |
+%           | [  OK  ][  Cancel  ] |
 %           |----------------------|
 %     (t) [string && options(1:2) == 't|' ]:
 %           Input text/edit box, returns string inputed into text box.
 %           Obvious numeric input (for which str2num is ok) is returned as
-%           numberical values (ex, 14, 1:2:10, 0.35E+5).
+%           numerical values (ex, 14, 1:2:10, 0.35E+5).
 %     ex. options = 't|my text|the second line', results in:
 %           |--mtitle--------------|
 %           | | my text          | |
 %           | | the second line  | |
-%           | [        OK        ] |
+%           | [  OK  ][  Cancel  ] |
 %           |----------------------|
 %     (*) [cell-Nx2]: Multiple "choice groups" in the same menu:
 %           Each cell element should have any of the syntaxes as above.
@@ -88,7 +88,7 @@ function choice = menuN(mtitle, options, Opt)
 %           |  | options2 part2 |   |
 %           |  subtitle3            |
 %           |  |<|===[]===|>| 3.5   |        % Slider
-%           |  [       OK       ]   |
+%           |  [  OK  ][  Cancel  ] |
 %           |-----------------------|
 %  Opt    - [struct]  - Structure containing options for font name, size etc.
 %
@@ -120,8 +120,18 @@ function choice = menuN(mtitle, options, Opt)
 
 %   Created by: Johan Winges
 %   $Revision: 1.0$  $Date: 2013-10-20 00:00:00$
-%   $Revision: 1.1$  $Date: 2014-10-21 11:00:00$
-%     -Fixed R2014b slider update, additional help comments
+%   $Revision: 1.1$  $Date: 2013-10-21 00:00:00$
+%     -Bugfix in automatic width detection, left aligned text in edit/text
+%   $Revision: 1.2$  $Date: 2014-10-21 00:00:00$
+%     -Fixed R2014b slider update, additional help comments, connected to GitHub
+%   $Revision: 1.3$  $Date: 2015-08-17 00:00:00$
+%     -No change in code
+%   $Revision: 1.5$  $Date: 2015-08-18 00:00:00$
+%     -No change in code
+%   $Revision: 1.6$  $Date: 2015-12-19 00:00:00$
+%     -Added Cancel button and support for numeric values in edit/text box
+%   $Revision: 1.61$  $Date: 2016-01-13 00:00:00$
+%     -Updated help comment to reflect changes in V1.6
 
 
 %% Set up default Opt struct:
