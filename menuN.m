@@ -153,6 +153,7 @@ defOpt.pixelPaddingWidth      = [6,   4]; % [bottom/top, between uicontrols]
 defOpt.InsteadOfPushUse       = 'p';      % p = popupmenu, r = radiobuttons
 defOpt.cancelButton           = true;
 defOpt.cancelButtonLabel      = 'Cancel';
+defOpt.standardCancelOutput   = NaN;
 
 % Check for opt input:
 if nargin == 0
@@ -806,14 +807,14 @@ if ishandle(hFig)
                   choice{idxOptions} = tmpStr;
                end
             elseif isfield(tmpStruct,'Value')
-               choice{idxOptions} = emptyIsMinusOne(...
-                  get(hOptions{idxOptions},'Value'));
+               choice{idxOptions} = emptyIsThis(...
+                  get(hOptions{idxOptions},'Value'),Opt.standardCancelOutput);
             elseif isfield(tmpStruct,'SelectedObject')
                % We have a buttongroup, instead we search for the selected object:
                tmpSelectedObject = get(hOptions{idxOptions},'SelectedObject');
                if isempty(tmpSelectedObject)
                   % No object selected:
-                  choice{idxOptions} = -1;
+                  choice{idxOptions} = Opt.standardCancelOutput;
                else
                   % One object is selected:
                   choice{idxOptions} = get(tmpSelectedObject,'userdata');
@@ -842,8 +843,8 @@ if ishandle(hFig)
    %% Close the figure (force it as the CloseRequestFuntion is overriden):
    delete(hFig)
 else
-   %% Standard output -1 if window does not exist
-   choice = -1;
+   %% Standard output Opt.standardCancelOutput if window does not exist
+   choice = Opt.standardCancelOutput;
 end
 
 %% Utilityfunctions
@@ -890,6 +891,12 @@ end
 function out = emptyIsMinusOne(in)
 if isempty(in)
    out = -1;
+else
+   out = in;
+end
+function out = emptyIsThis(in,this)
+if isempty(in)
+   out = this;
 else
    out = in;
 end
