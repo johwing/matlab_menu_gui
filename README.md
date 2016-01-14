@@ -1,58 +1,72 @@
-matlab_menu_gui
+menuN - Improved menu for Matlab
 ===============
 
-A powerful but simple to use graphical user interface menu in Matlab. Combines the functionality of menu (exclusive option selection) and inputdlg (text input) as well as introducing radio-button groups, check-boxes (multiple selection) and sliders (numeric selection).
+A powerful but simple to use graphical user interface menu in Matlab. Creates an automatically sized gui menu at the center of the screen with the supplied figure title and waits for user input. 
+7 different types of menu styles are available: Push-button *, Radio-button *, Popup-menu/list *, Check box ^, List box ^, Slider and Text box. The styles marked by * represent exlusive selection, i.e. only one option can be selected. The syles marked by ^ represent multiple selection, i.e. none to all options can be selected. The slider style creates a slider which returns a numeric value in given range. The text box style returns the written text or numeric input that the user specifies in the edit/text box field. 
+A default selection/value/text is also possible to specify when applicable. 
+
+In addition to the different menu styles, multiple groups of options can be presented in the same menu to quickly create a small application specific user interface. This feature can also display subtitles for each option group. 
+
+The syntax and usage of menuN is similar to the Matlab function menu. However, some additional formats of the inputs and output have been added to make use of the additional features.   
 
 Syntax:
-  choice = menuN(mtitle, options)
 
-Input:
-  mtitle    - [string] - title of menu figure window
-  options - [cellstr, string, double (1x2, 1x3), cell (Nx2)] - menu option type
+	choice = menuN(mtitle, options)
+  
+	mtitle	- [string] - Title of menu window
+	options	- [various] - Menu options
+	
+Style specific input options with examples:
 
-Different types of options:
-(i) Button menu (same behaviour as menu) [exclusive selection]:
-  options - [cellstr] - labels for buttons, ex. 
-  options = {'button1', 'button2'};
-(ii) Radio-button group [exclusive selection]:
-  options - [string] (first two characters 'r|') - labels for radio-group, ex.
-  options = 'r|radio1|radio2';
-  Start one label with '¤' sign to set it toggled on as default.
-(iii) Popup-menu [exclusive selection]:
-  options - [string] (first two characters 'p|') - labels for popup-menu, ex.
-  options = 'p|popup1|popup2';
-  Start one label with '¤' sign to set it toggled on as default.
-(iv) Check-box group [multiple selection]:
-  options - [string] (first two characters 'x|') - labels for check-boxes, ex.
-  options = 'x|check1|check2';
-  Start any label with '¤' sign to set it toggled on as default.
-(v) List-box menu [multiple selection]:
-  options - [string] - labels for list-box lines, ex.
-  options = 'listline1|listline2';
-  Start any label with '¤' sign to set it toggled on as default.
-(vi) Slider [numeric value selection]:
-  options - [double (1x2,1x3)] - [min, max, (initial)] slider value, ex.
-  options = [0, 1];
-  Add a third value (e.g. [0, 1, 0.5]) to set it as the default value.
-(vii) Text box [text input]:
-  options - [string] (first two characters 't|') - initial text in textbox, ex.
-  options = 't|my text|with two lines';
-  Add additional '|' character to allow for multiple lines in the text box.
+	Push-buttons, 'b|':
+		options	= 'Choice 1|Choice 2|Choice 3'; OR
+		options	= {'Choice 1','Choice 2','Choice 3'};
+	Radio-buttons, 'r|':
+		options	= 'r|Choice 1|¤Choice 2|Choice 3'; 
+		Note, option marked with ¤ is set as default selection.
+	Popup-menu, 'p|':
+		options	= 'p|Choice 1|¤Choice 2|Choice 3'; 
+	Check-boxes, 'x|':
+		options	= 'x|Choice 1|¤Choice 2|¤Choice 3'; 
+		Note, options marked with ¤ are set ticked/checked as default.
+	List-box, 'l|':
+		options	= 'l|Choice 1|¤Choice 2|¤Choice 3'; 
+	Slider:
+		options = [startValue,endValue,defaultValue];
+		Note, defaultValue is optional, if not supplied the slider is placed in the middle.
+	Text-box, 't|':
+		options = 't|My default text'; OR
+		options = 't|My default text|with multiple|lines'; OR
+		options = 't|1:1:25';
+		Note, obvious numeric input (see third example) will be converted to numeric value(s).  
+		
+Multiple option groups:
 
-(*) Multi-menu option with any number of the input types (ii-vii) and subtitles:
-option = [cell (Nx2)] - first column any input of types (ii-vii), second column is optional [string] with subtitle for each option. ex.
-options = {'p|popup1|popup2', 'Popup subtitle'; ...
-                 'x|check1|check2', 'Check/box subtitle'; ...
-                 [0, 1, 0.5], 'Slider subtitle'};
+	options	- cell of size = [N, 2]
+	
+	options{:, 1}	- Any of the above styles except for the push-button.
+	options{:, 2}	- Subtitle placed above the options specified on the same row. 
+					Note, leave empty or blank '' if no subtitle should be displayed. 
+	Example:
+		options	=	{'p|popup1|popup2', 'Popup subtitle'; ...
+               'x|check1|check2', 'Checkbox subtitle'; ...
+               [0, 1, 0.5], 'Slider subtitle'};
 
 Output:
-  choice - [double, string, cell] - selected option index, value or text
-Note, if no option is selected, or the window is closed, returns -1.
-If input of type (*) is used, choice is a cell array with the selected option for each individual input type.
 
+	choice - [double, string, cell] - selected option index, value(s) or text
+	
+Note, if no option is selected, the window is closed, or the cancel button is clicked choice is NaN.
+If multiple option groups are supplioed, choice is a cell array of size [N, 1]. 
+The selected option for each individual input type.
 
+Advanced mode: 
 
-
-
-
-
+	choice = menuN(mtitle, options, Opt)
+	Opt - option structure which can be used to override default fontsizes, OK/Cancel button labels and gui sizes etc.
+	Check the code for full list of options. 
+	
+	
+See also:
+	
+	menu, inputdlg
