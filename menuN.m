@@ -44,9 +44,10 @@ function choice = menuN(mtitle, options, Opt)
 %           | | |    ...     |
 %           | [OK][Cancel]   |
 %           |----------------|
-%     (l) [string]: Listbox with mutliselection, separate options with |.
+%     (l) [string && options(1:2) == 'l|']: 
+%           Listbox with mutliselection, separate options with |.
 %           Start an option string part with ¤ to set it default toggled on.
-%     ex. options = 'option1|option2|...', results in:
+%     ex. options = 'l|option1|option2|...', results in:
 %           |--mtitle----------|
 %           |  |  option1  |   |
 %           |  |  option2  |   |
@@ -98,7 +99,7 @@ function choice = menuN(mtitle, options, Opt)
 %         is a cell array equal with length == number of rows in options.
 %     (b) If an selection type allows multiselection the choice array
 %         contains all selected options, (array instead of scalar).
-%     (c) If any option group has no values selected its value is -1.
+%     (c) If any option group has no values selected its value is NaN.
 %
 % Example of usage with input of type (*):
 %  choice = menuN('menuN',...
@@ -132,6 +133,9 @@ function choice = menuN(mtitle, options, Opt)
 %     -Added Cancel button and support for numeric values in edit/text box
 %   $Revision: 1.61$  $Date: 2016-01-13 00:00:00$
 %     -Updated help comment to reflect changes in V1.6
+%   $Revision: 1.65$  $Date: 2016-01-14 00:00:00$
+%     -Added support for 'l|' as marker for listbox
+%     -Changed default cancel output to NaN (added an option for this)
 
 
 %% Set up default Opt struct:
