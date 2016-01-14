@@ -590,7 +590,11 @@ for idxOptions = numOptionsGroups:-1:1
       tmpCurrentPosition(2) = tmpCurrentPosition(2) + tmpNewSize(2) + ...
          extentHeightPopupmenuPadding + Opt.pixelPaddingHeigth(2);
       %% Print for Options of Input type (l)
-   elseif ischar(tmpOptions)
+   elseif ischar(tmpOptions) || (ischar(tmpOptions) && strcmp(tmpOptions(1:2),'l|'))
+      if strcmp(tmpOptions(1:2),'l|')
+         % Remove marker from charachter line:
+         tmpOptions     = tmpOptions(3:end);
+      end
       % Remove marker from charachter line:
       tmpPipeIdx     = strfind(tmpOptions,'|');
       tmpMarkedIdx   = strfind(tmpOptions,'¤');
