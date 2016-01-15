@@ -6,11 +6,14 @@ function choice = menuN(mtitle, options, Opt)
 %  choice = MENUN(mtitle, options, Opt)
 %
 % Input:
-%  mtitle   - [string]  - Menu window title
+%  mtitle   - [string OR cell with 2 elements] - Menu window title and message
+%           - {'Menu title','Menu Message'} - Supply different title and message
+%           - {'Menu title',''} - Does not print any message
+%           Note, the message has to be line breaked manually. This can be 
+%           achieved by inserting '|' where a line break should be done.
 %  options  - [various] - Multifunctional:
 %     (b) [cellstr]: Buttons are created with labels as in the cell array.
-%     ex. options = {'option1', 'option2', ... },
-%     OR: options = 'b|option1|option2|...', results in:
+%     ex. options = {'option1', 'option2', ... }, results in:
 %           |--mtitle---------|
 %           |  [  option1  ]  |
 %           |  [  option2  ]  |
@@ -44,7 +47,7 @@ function choice = menuN(mtitle, options, Opt)
 %           | | |    ...     |
 %           | [OK][Cancel]   |
 %           |----------------|
-%     (l) [string && options(1:2) == 'l|']: 
+%     (l) [string && options(1:2) == 'l|']:
 %           Listbox with mutliselection, separate options with |.
 %           Start an option string part with ¤ to set it default toggled on.
 %     ex. options = 'l|option1|option2|...', results in:
@@ -136,6 +139,10 @@ function choice = menuN(mtitle, options, Opt)
 %   $Revision: 1.65$  $Date: 2016-01-14 00:00:00$
 %     -Added support for 'l|' as marker for listbox
 %     -Changed default cancel output to NaN (added an option for this)
+%     -Note, removed buggy support for 'b|button1|button2' type of input
+%   $Revision: 1.7$  $Date: 2016-01-15 00:00:00$
+%     -Added support for a message under the title to mimic the behaviour of
+%     menu(). Set mtitle [string] -> mtitle {cell 1x2} where {'title','message'}
 
 
 %% Set up default Opt struct:
@@ -158,6 +165,8 @@ defOpt.InsteadOfPushUse       = 'p';      % p = popupmenu, r = radiobuttons
 defOpt.cancelButton           = true;
 defOpt.cancelButtonLabel      = 'Cancel';
 defOpt.standardCancelOutput   = NaN;
+
+defOpt.printTitleAsText       = true;
 
 % Check for opt input:
 if nargin == 0
@@ -209,17 +218,26 @@ extentWidthRadiobuttonInPadding  = 20;
 extentWidthGroupPadding       = 15;
 extentHeightTitlePadding      = -Opt.pixelPaddingHeigth(2);
 
+%% Check mTitle input:
+if ~iscell(mtitle)
+   if Opt.printTitleAsText
+      mtitle = {mtitle,mtitle};
+   else
+      mtitle = {mtitle,''};
+   end
+end
 
 %% Create a figure
 % We do not worry about its size and position yet:
 % hFig           = figure('Name',mtitle,'WindowStyle','modal','NumberTitle','off');
-hFig           = figure('Name',mtitle,'Toolbar','none','Menubar','none','NumberTitle','off');
+hFig           = figure('Name',mtitle{1},'Toolbar','none','Menubar','none','NumberTitle','off');
 
 % Set initial necessary width that all uicontrols must be [pixels]:
 tmpMinimumSize                = [extentWidthUniversalMin, 15];
 
 % Assume that a OK button is necessary:
 flagMakeOkButton              = true;
+flagMakeOnlyCancelButton      = false;
 
 %% Check what type of options input we have
 if iscellstr(options) && isvector(options) && ...
@@ -230,6 +248,7 @@ if iscellstr(options) && isvector(options) && ...
    subtitles                  = {''};
    % Check Okbutton is unnecessary:
    flagMakeOkButton        = false;
+   flagMakeOnlyCancelButton = true;
 elseif iscell(options) && size(options,2) == 2              % Input type (*)
    % Make all (eventual) pusbutton group become popup
    Opt.usePopupInsteadOfPush  = true;
@@ -280,7 +299,7 @@ if flagMakeOkButton
          'FontName',    Opt.fontName, ...
          'FontSize',    Opt.pushbuttonFontSize, ...
          'Position',    tmpPosition, ...
-         'Callback',    {@closeMenuFigure,hFig,-1});
+         'Callback',    {@closeMenuFigure,hFig,Opt.standardCancelOutput});
       % Check actual necessary size:
       tmpExtent = get(hCancel,'extent');
       extentWidthUniversal   = max(extentWidthUniversal, ...
@@ -292,6 +311,26 @@ if flagMakeOkButton
       % Reset X coordinate:
       tmpCurrentPosition(1) = Opt.pixelPaddingWidth(1);
    end
+   % Update current position Y coordinate:
+   tmpCurrentPosition(2) = tmpCurrentPosition(2) + tmpNewSize(2) + ...
+      extentHeigthPushbuttonPadding + Opt.pixelPaddingHeigth(2);
+elseif flagMakeOnlyCancelButton && Opt.cancelButton
+   tmpPosition   = [tmpCurrentPosition, tmpMinimumSize];
+   hCancel            = uicontrol( ...
+      'Style',       'Pushbutton',...
+      'String',      Opt.cancelButtonLabel,...
+      'FontName',    Opt.fontName, ...
+      'FontSize',    Opt.pushbuttonFontSize, ...
+      'Position',    tmpPosition, ...
+      'Callback',    {@closeMenuFigure,hFig,Opt.standardCancelOutput});
+   % Check actual necessary size:
+   tmpExtent = get(hCancel,'extent');
+   extentWidthUniversal   = max(extentWidthUniversal, ...
+      tmpExtent(3)+extentWidthPushbuttonInPadding);
+   tmpNewSize  = [extentWidthUniversal, ...
+      tmpExtent(4) + extentHeigthPushbuttonInPadding];
+   % Update size of uicontrol:
+   set(hCancel,'Position',[tmpCurrentPosition,tmpNewSize]);
    % Update current position Y coordinate:
    tmpCurrentPosition(2) = tmpCurrentPosition(2) + tmpNewSize(2) + ...
       extentHeigthPushbuttonPadding + Opt.pixelPaddingHeigth(2);
@@ -595,7 +634,7 @@ for idxOptions = numOptionsGroups:-1:1
       tmpCurrentPosition(2) = tmpCurrentPosition(2) + tmpNewSize(2) + ...
          extentHeightPopupmenuPadding + Opt.pixelPaddingHeigth(2);
       %% Print for Options of Input type (l)
-   elseif ischar(tmpOptions) || (ischar(tmpOptions) && strcmp(tmpOptions(1:2),'l|'))
+   elseif ischar(tmpOptions) || (ischar(tmpOptions) && strcmp(tmpOptions(1:2),'l|')) %
       if strcmp(tmpOptions(1:2),'l|')
          % Remove marker from charachter line:
          tmpOptions     = tmpOptions(3:end);
@@ -702,12 +741,22 @@ for idxOptions = numOptionsGroups:-1:1
       % Get updated current position:
       tmpPosition   = [tmpCurrentPosition, tmpMinimumSize];
       
+      tmpText        = subtitles{idxOptions};
+      tmpPipeIdx     = strfind(tmpText,'|');
+      % Convert any | charachters left to newline characters if any. Also ensure
+      % that the edit box is multiline if this is the case.
+      if ~isempty(tmpPipeIdx)
+         tmpText = strrep(tmpText,'|',sprintf('\n'));
+      end
+   
       % Create subtitle:
       hSubtitle{idxOptions} = uicontrol( ...
          'Style',       'Text',...
+         'Min',         0,...
+         'Max',         2,...
          'FontName',    Opt.fontName, ...
          'FontSize',    Opt.subtitleFontSize, ...
-         'String',      subtitles{idxOptions},...
+         'String',      tmpText,...
          'Position',    tmpPosition,...
          'HorizontalAlignment', 'left');
       
@@ -730,6 +779,42 @@ for idxOptions = numOptionsGroups:-1:1
       
    end
    
+end
+
+%% Print title text or message
+% Note, no automatic linebreaking is done on the title text. It can be manually
+% linebreaked by inserting | into the string or by supplying a string that
+% already has linebreaks created using for example sprintf('\n').
+if ~isempty(mtitle{2})
+   tmpText = mtitle{2};
+   tmpPipeIdx     = strfind(tmpText,'|');
+   % Convert any | charachters left to newline characters if any. Also ensure
+   % that the edit box is multiline if this is the case.
+   if ~isempty(tmpPipeIdx)
+      tmpText = strrep(tmpText,'|',sprintf('\n'));
+   end
+   
+   % Create uicontrol:
+   hmtitleText = uicontrol( ...
+      'Style',       'Text',...
+      'Min',         0,...
+      'Max',         2,...
+      'FontName',    Opt.fontName, ...
+      'FontSize',    Opt.subtitleFontSize, ...
+      'String',      tmpText,...
+      'Position',    tmpPosition,...
+      'HorizontalAlignment', 'left');
+   
+   % Check actual necessary size:
+   tmpExtent = get(hmtitleText,'extent');
+   extentWidthUniversal   = max(extentWidthUniversal, ...
+      tmpExtent(3)+extentWidthPopupmenuInPadding);
+   tmpNewSize  = [extentWidthUniversal, tmpExtent(4)];
+   % Update size of uicontrol:
+   set(hmtitleText,'Position',[tmpCurrentPosition,tmpNewSize]);
+   % Update current position Y coordinate:
+   tmpCurrentPosition(2) = tmpCurrentPosition(2) + tmpNewSize(2) + ...
+      extentHeightPopupmenuPadding + Opt.pixelPaddingHeigth(2);
 end
 
 %% Update width of all componenents to be same:
@@ -778,6 +863,16 @@ if flagMakeOkButton
       set(hOK,'Position',tmpPosition);
    end
 end
+if flagMakeOnlyCancelButton && Opt.cancelButton
+   tmpPosition = get(hCancel,'Position');
+   tmpPosition(3) = extentWidthUniversal;
+   set(hCancel,'Position',tmpPosition);
+end
+if ~isempty(mtitle{2})
+   tmpPosition = get(hmtitleText,'Position');
+   tmpPosition(3) = extentWidthUniversal;
+   set(hmtitleText,'Position',tmpPosition);
+end
 
 %% Change size of figure, place it at the center of the screen:
 screenSize           = get(0,'ScreenSize');
@@ -805,7 +900,7 @@ if ishandle(hFig)
             if isfield(tmpStruct,'Style') && strcmp(tmpStruct.Style,'edit')
                tmpStr = get(hOptions{idxOptions},'String');
                [tmpVal, tmpStatus] = str2num(tmpStr);
-               if tmpStatus 
+               if tmpStatus
                   choice{idxOptions} = tmpVal;
                else
                   choice{idxOptions} = tmpStr;
